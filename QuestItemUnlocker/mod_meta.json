@@ -1,7 +1,7 @@
 {
 	"Name": "Quest Item Unlocker",
 	"ModGUID": "xen.QuestItemUnlocker",
-	"Version": "0.0.1",
+	"Version": "0.0.2",
 	"ModAssembly": "QuestItemUnlocker.dll",
 	"MinWinchVersion": "0.2.3",
 	"Entrypoint": "QuestItemUnlocker.Loader/Initialize"

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Winch.Core;
@@ -18,41 +17,38 @@ namespace QuestItemUnlocker
 		{
 			if (arg1.name == "Game")
 			{
-				foreach (var relicPOI in GameObject.FindObjectsOfType<HarvestPOI>().Where(x => x.harvestable is HarvestPOIDataModel poi && poi.items.Any(x => x.name.Contains("Relic"))))
+				// The family crest cannot be discarded so only replenish it if the quest is not completed and they don't already have it
+				if (!GameManager.Instance.QuestManager.GetIsQuestStepCompleted("Hermitage_ReturnCrest") && !HasItem("quest-crest"))
 				{
-					relicPOI.AddStock(1, false);
+					ReplenishStock("Family Crest");
+				}
+
+				// These can be discarded too
+				ReplenishStock("Dog Tag");
+
+				// Relics can be discarded so we can replenish them all without potentially clogging the players inventory
+				ReplenishStock("Relic");
+			}
+		}
+
+		private void ReplenishStock(string name)
+		{
+			foreach (var dredgePOI in GameObject.FindObjectsOfType<HarvestPOI>()
+			   .Where(x => x.harvestable is HarvestPOIDataModel poi && poi.items
+			   .Any(x => x.name.Contains(name))))
+			{
+				if (dredgePOI.Stock < 1)
+				{
+					dredgePOI.AddStock(1, false);
 				}
 			}
 		}
 
-		public void Update()
+		private bool HasItem(string id)
 		{
-			// For some reason this says it gives you the item but it doesnt
-			/*
-			if (SceneManager.GetActiveScene().name == "Game")
-			{
-				for (int i = 1; i <= 5; i++)
-				{
-					if (Input.GetKeyDown((KeyCode)Enum.Parse(typeof(KeyCode), $"Alpha{i}")))
-					{
-						var item = $"Relic{i}";
-						try
-						{
-							GameManager.Instance.ItemManager.AddItemById(item, GameManager.Instance.SaveData.Inventory);
-							var msg = $"Added item {item}";
-							WinchCore.Log.Info(msg);
-							ShowNotification(NotificationType.ITEM_ADDED, msg);
-						}
-						catch (Exception e) 
-						{
-							var msg = $"Couldn't add item {item} : {e}";
-							WinchCore.Log.Error(msg);
-							ShowNotification(NotificationType.ERROR, msg);
-						}
-					}
-				}
-			}
-			*/
+			var inInventory = GameManager.Instance.SaveData.Inventory.spatialItems.FirstOrDefault(x => x.id == id) != null;
+			var inStorage = GameManager.Instance.SaveData.Storage.spatialItems.FirstOrDefault(x => x.id == id) != null;
+			return inInventory || inStorage;
 		}
 
 		public static void ShowNotificationWithColour(NotificationType notificationType, string text, string colourCode)
